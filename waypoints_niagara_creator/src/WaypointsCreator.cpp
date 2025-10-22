@@ -49,7 +49,7 @@ private:
   double interval_ = 1.0;
   bool first_data_received_ = false;
 
-  std::string file_path_ = "/home/genis/Music/wp.csv";
+  std::string file_path_ = "/home/armdut/waypoints/wp.csv";
   std::ofstream ofs_;
 
   nav_msgs::msg::Odometry current_pose_;

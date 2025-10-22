@@ -44,14 +44,25 @@ add_executable(waypoints_calculations src/WaypointsCalculations.cpp src/CubicSpl
 ament_target_dependencies(waypoints_calculations rclcpp ackermann_msgs geometry_msgs std_msgs nav_msgs visualization_msgs tf2 tf2_ros tf2_geometry_msgs)
 target_link_libraries(waypoints_calculations Eigen3::Eigen)
 
+# Add PathTrackingMetrics executable
+add_executable(PathTrackingMetrics src/PathTrackingMetrics.cpp)
+ament_target_dependencies(PathTrackingMetrics rclcpp geometry_msgs std_msgs nav_msgs visualization_msgs)
+
 install(TARGETS
   waypoints_calculations
+  PathTrackingMetrics
   DESTINATION lib/${PROJECT_NAME}
 )
 
 install(
-  DIRECTORY launch src config
+  DIRECTORY launch src config scripts
   DESTINATION share/${PROJECT_NAME}
+)
+
+# Install Python scripts
+install(PROGRAMS
+  scripts/generate_test_path.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_package()

@@ -154,22 +154,21 @@ void WaypointsCalculations::pub_callback()
     publishWaypointsCubeLinesMarker();
     auto msg = geometry_msgs::msg::Twist();
 
-    // Set the linear and angular velocities
-    msg.linear.x = setVelocity;  
-    msg.angular.z = stering_angle;  
-    // print path_velocity_ and stering_angle
-    // RCLCPP_INFO(this->get_logger(), "path_velocity_: %f", path_velocity_);
-    // RCLCPP_INFO(this->get_logger(), "stering_angle: %f", stering_angle);
-    // print eror_front_axle
-    // RCLCPP_INFO(this->get_logger(), "error_front_axle: %f", error_front_axle);
+    // Set the linear velocity (forward speed)
+    msg.linear.x = setVelocity;
+    
+    // Convert steering angle to angular velocity for Ackermann drive
+    // For Ackermann steering: angular_velocity = (velocity * tan(steering_angle)) / wheelbase
+    // Clamp steering angle to prevent extreme values
+    double clamped_steering = std::max(-1.0, std::min(1.0, stering_angle));
+    msg.angular.z = (setVelocity * tan(clamped_steering)) / L;
+    
     // Publish the message
     cmd_vel_pub_->publish(msg);
-    // print the size of the cubelines vector
-    // RCLCPP_INFO(this->get_logger(), "waypointsCubeLines.size(): %d", waypointsCubeLines.size());
     
-    // print the size of the waypoints cube lines indec_targ
-    // RCLCPP_INFO(this->get_logger(), "target_idx: %f", target_idx);
-    
+    // Debug output
+    RCLCPP_INFO(this->get_logger(), "velocity: %.2f, steering: %.3f, angular_z: %.3f", 
+                setVelocity, clamped_steering, msg.angular.z);
 }
 
 // ODOM CALLBACK    
@@ -437,13 +436,8 @@ void WaypointsCalculations::computeCrossTrackError() {
 
 
 void WaypointsCalculations::computeSteeringAngle(){
-    
-
     double yaw_goal = waypoints[target_waypoint](3);
-
-    
     double current_yaw_car = GetNormaliceAngle(current_yaw_);
-
     double yaw_path = GetNormaliceAngle(yaw_goal);
 
     double theta_e = GetNormaliceAngle(yaw_path - current_yaw_car);
@@ -452,13 +446,6 @@ void WaypointsCalculations::computeSteeringAngle(){
 
     double delta = theta_e + theta_d ;
     stering_angle = GetNormaliceAngle(delta);
-
-    // print stering_angle
-    RCLCPP_INFO(this->get_logger(), "stering_angle: %f", stering_angle);
-    // print ther error_front_axle
-    RCLCPP_INFO(this->get_logger(), "error_front_axle: %f", error_front_axle);
-    // print the theta_e
-    RCLCPP_INFO(this->get_logger(), "theta_e: %f", theta_e);
 }
 
 void WaypointsCalculations::publishWaypointsCubeLinesMarker() {
